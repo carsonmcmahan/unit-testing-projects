@@ -92,4 +92,25 @@ describe(BankManager, () => {
       expect(history[1]?.amount).toBe(3000);
     });
   });
+
+  describe("getHistory()", () => {
+    it("should return a complete array of transactions", () => {
+      bankManager.deposit(50_000); // 0
+      bankManager.withdraw(10_000); // 1
+      bankManager.deposit(5_000); // 2
+      bankManager.withdraw(25_000); // 3
+
+      const history = bankManager.history;
+
+      expect(history).toHaveLength(4);
+
+      expect(history[0]?.type).toBe("CREDIT");
+      expect(history[2]?.type).toBe("CREDIT");
+
+      expect(history[1]?.type).toBe("DEBIT");
+      expect(history[3]?.type).toBe("DEBIT");
+
+      expect(history[3]?.amount).toBe(25_000);
+    });
+  });
 });
