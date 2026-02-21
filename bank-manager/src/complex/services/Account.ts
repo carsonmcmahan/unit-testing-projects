@@ -10,18 +10,13 @@ import type { AccountName, Transaction, TransactionType } from "../models/Transa
     6. Should be able to transfer between Accounts
 */
 export class Account {
-  protected _accountName: AccountName;
+  private _accountName: AccountName | undefined;
 
-  protected _balance: number;
-  protected _history: Array<Transaction> = [];
+  private _balance: number = 0;
+  private _history: Array<Transaction> = [];
 
-  constructor(name: AccountName, initialBalance: number = 0) {
+  set accountName(name: AccountName) {
     this._accountName = name;
-    this._balance = initialBalance;
-
-    if (initialBalance > 0) {
-      this.pushItemToHistory("CREDIT", initialBalance);
-    }
   }
 
   get balance(): number {
@@ -32,6 +27,10 @@ export class Account {
     return this._history;
   }
 
+  /**
+   * Adds amount to `_balance`.
+   * @param amount Amount of money to deposit.
+   */
   deposit(amount: number): void {
     if (amount <= 0) throw Error("Deposit amount must be greater than 0");
 
@@ -40,12 +39,43 @@ export class Account {
   }
 
   /**
+   * Subtracts amount from `_balance`.
+   * @param amount Amount of money to withdraw.
+   */
+  withdraw(amount: number): void {
+    if (amount <= 0) throw Error("Withdraw amount must be grater than 0");
+    if (amount > this._balance) throw Error("Amount must not be greater than balance");
+
+    this._balance -= amount;
+    this.pushItemToHistory("DEBIT", amount);
+  }
+
+  /**
+   * Transfer money from one account to another
+   * @param transferToAccount
+   * @param amount
+   */
+  transfer(transferToAccount: Account, amount: number): void {
+    if (amount <= 0) throw Error("Transfer amount must be greater than 0");
+    if (amount > this._balance) throw Error("Amount must not be greater than balance");
+
+    this.withdraw(amount);
+    this.pushItemToHistory("TRANSFER", amount);
+
+    transferToAccount.deposit(amount);
+  }
+
+  /**
    * Creates a `Transaction Object` and adds it to `_history`.
    * @param type Type of transaction
    * @param amount Amount added or removed from balance.
    */
   private pushItemToHistory(type: TransactionType, amount: number) {
-    const transaction: Transaction = {
+    if (!this._accountName) {
+      throw Error("Account name must be defined to add transactions");
+    }
+
+    let transaction: Transaction = {
       id: crypto.randomUUID(),
       account: this._accountName,
       type,
