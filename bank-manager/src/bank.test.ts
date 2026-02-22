@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { BankManager, type Transaction } from "./bank.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { BankManager } from "./bank.js";
 
 describe(BankManager, () => {
   let bankManager: BankManager;
